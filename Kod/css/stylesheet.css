@@ -1,0 +1,85 @@
+/**
+ * Body
+ */
+body {
+	-moz-user-select: none; 
+	-webkit-user-select: none; 
+	-ms-user-select:none; 
+	user-select:none;
+}
+.container {
+	margin: 20px;
+}
+
+/**
+ * Cardholders
+ */
+.cardholder {
+	height: 120px;
+	width: 80px;
+	border: 1px solid black;
+	display: inline-block;
+	margin: 5px;
+	position: relative;
+	border-radius: 10px;
+	overflow: visible;
+}
+.pile {
+	background: #aaa;
+}
+.pile-drop { 
+	background: #dec;
+}
+.pile-div {
+	float: left;
+	margin-right: 70px;
+}
+.pile-thirteen {
+	background: #ecf;
+	margin-right: 165px;
+}
+.empty {
+	background: #def;
+	overflow: visible;
+}
+.other {
+	overflow: auto;
+	height: 480px;
+	width: 90px;
+	position: relative;
+	display: inline-block;
+	overflow: visible;
+}
+
+.pile-ace {
+	background: #ddd;
+	
+}
+.ace-piles {
+	float: left;
+}
+
+/**
+ * Card
+ */
+.card {
+	height: 120px;
+	width: 80px;
+	display: inline-block;
+	position: absolute;
+	top: -1px;
+	left: -1px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+.turned {
+	cursor: default;
+}
+
+/**
+ * Board
+ */
+
+.board {
+}
