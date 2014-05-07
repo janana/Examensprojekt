@@ -6,7 +6,7 @@ var Deck = {
 				cards.push(new Card(number, suit));
 			}
 		}
-		return cards;//this.shuffle(cards);
+		return this.shuffle(cards);
 	},
 	shuffle: function(cards) {
 		var i = cards.length, o, temp;
@@ -20,6 +20,7 @@ var Deck = {
 	},
 	draggable: function() {
 		var that = this;
+		var isThirteen = false;
 		$(".card").draggable({
 			addClasses: false, // No draggable class on cards
 			revert: function(e) { // Returns the card to original position if dropped on invalid cardholder
@@ -36,26 +37,38 @@ var Deck = {
 			stack: ".card", // Manages zIndex on dragged objects
 			alsoDrag: ".card", // Functionality is fixed in alsoDrag-plugin.js as this elements nextAll() siblings
 			start: function(event, ui) {
-				if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
-					$(this).draggable("option", "stack", "");
+				if ($(this).parent().hasClass("pile-thirteen")) {
+					// The card is from the thirteen-pile. if this card is dropped, the player should get 2 points
+					isThirteen = true;
 				}
-			},
-			stop: function(event, ui) {
-				if (ui.helper[0].parentElement.hasClass("pile-ace") {
-					Board.setScore(2);
-				} 
+				// Fixes the z-index on cards stacked together on an empty-pile
+				var highestZindex = parseInt($(this).css("zIndex"), 10);
 				if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
-					var highestZindex = parseInt($(this).css("zIndex"), 10);
 					$(this).parent().children().each(function(index, obj) {
-
 						var pos = (index * 30) -1;
 						$(obj).css({
-							top: pos + "px",
-							left: "-1px",
 							"z-index": highestZindex + 1
 						});
 					});
 				}
+			},
+			stop: function(event, ui) {
+				if (isThirteen) { // Set score if the card has been dropped from thirteen pile
+					if ($(this).parent().hasClass("empty") || $(this).parent().hasClass("pile-ace")) {
+						Board.setScore(2);
+					}
+					isThirteen = false;
+				}
+				if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
+					$(this).parent().children().each(function(index, obj) {
+						var pos = (index * 30) -1;
+						$(obj).css({
+							top: pos + "px",
+							left: "-1px"
+						});
+					});
+				}
+				
 		    }
 		});
 		
@@ -72,7 +85,7 @@ var Deck = {
 				    });
 				    card.draggable("disable");
 
-				    Board.setScore(2);
+				    Board.setScore(1);
 
 				    // Test piles for top card dragging ability
 				    that.enableDraggingDropTopCard();
@@ -118,15 +131,13 @@ var Deck = {
 				$(this).children(".empty").append(card);
 				$(this).children(".empty").append(next);
 				
-				$(this).children(".empty").children().each(function(index, obj) {
+				$(this).children(".empty").children().each(function(index, obj) { // fix z-index here instead
 					var pos = index * 30 -1;
-					card.css({
+					$(obj).css({
 				    	left: "-1px",
 				    	top: pos + "px"
 			    	});	
 				});
-
-				Board.setScore(1);
 
 			    // Test piles for top card dragging ability
 			    that.enableDraggingDropTopCard();
@@ -159,6 +170,12 @@ var Deck = {
 	},
 	doubleClickable: function() {
 		// When double click, test if possible to append card on any of the ace-piles
+		$(document).on("dblclick", ".card", function(e) {
+			if (!$(this).hasClass("turned")) {
+				console.log($(this).draggable("option"));
+				console.log(this);
+			}
+		});
 	},
 	enableDraggingDropTopCard: function() {
 		// Test drop-pile for top card dragging ability
@@ -180,7 +197,7 @@ var Deck = {
 			var c = id.split("_");
 			// c[0] = suit, c[1] = number
 			 
-			$(obj).attr("src", "pics/"+c[0]+"/"+c[1]+".png").draggable("enable");
+			$(obj).attr("src", "pics/"+c[0]+"/"+c[1]+".png");
 		});
 	},
 	testGameWon: function() {

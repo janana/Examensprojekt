@@ -36,4 +36,5 @@ $(document).ready(function() {
 	Deck.draggable();
 	Deck.doubleClickable();
 	Deck.resetTurnedCards();
+	Deck.doubleClickable();
 });

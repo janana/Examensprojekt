@@ -68,20 +68,24 @@ var Board = {
 					stack: ".card", // Manages zIndex on dragged objects
 					alsoDrag: ".card", // Functionality is fixed in alsoDrag-plugin.js as this elements nextAll() siblings
 					start: function(event, ui) {
-						if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
-							$(this).draggable("option", "stack", "");
+						// Fixes the z-index on cards stacked together on an empty-pile
+						var highestZindex = parseInt($(this).css("zIndex"), 10);
+						if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
+							$(this).parent().children().each(function(index, obj) {
+								var pos = (index * 30) -1;
+								$(obj).css({
+									"z-index": highestZindex + 1
+								});
+							});
 						}
 					},
 					stop: function(event, ui) {
 						if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
-							var highestZindex = parseInt($(this).css("zIndex"), 10);
 							$(this).parent().children().each(function(index, obj) {
-
 								var pos = (index * 30) -1;
 								$(obj).css({
 									top: pos + "px",
-									left: "-1px",
-									"z-index": highestZindex + 1
+									left: "-1px"
 								});
 							});
 						}
@@ -91,7 +95,7 @@ var Board = {
 				// Disable the dragging on bottom cards
 				removed.splice(removed.length - 1);
 				$(removed).draggable("disable");
-
+				
 				Deck.resetUnturnedCards();
 				e.preventDefault();
 			} else { // The pile is empty and should reset
