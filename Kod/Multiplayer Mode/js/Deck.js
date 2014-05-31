@@ -18,10 +18,10 @@ var Deck = {
 		}
 		return cards;
 	},
-	draggable: function() {
+	draggable: function(socket, boardID) {
 		var that = this;
 		var isThirteen = false;
-		$(".card").draggable({
+		$("#board-"+boardID+" .card").draggable({
 			addClasses: false, // No draggable class on cards
 			revert: function(e) { // Returns the card to original position if dropped on invalid cardholder
 				if ($(e).hasClass("other") || $(e).hasClass("pile-ace")) {
@@ -32,9 +32,7 @@ var Deck = {
 			revertDuration: 0,
 			cancel: ".turned", // Cancels dragging on hidden cards
 			containment: "#container", // Contains the cards to the container
-			//snap: ".other, .pile-ace", // Snap to inner cardholders
-			//snapMode: "inner",
-			stack: ".card", // Manages zIndex on dragged objects
+			stack: "#board-"+boardID+" .card", // Manages zIndex on dragged objects
 			alsoDrag: ".card", // Functionality is fixed in alsoDrag-plugin.js as this elements nextAll() siblings
 			start: function(event, ui) {
 				if ($(this).parent().hasClass("pile-thirteen")) {
@@ -68,10 +66,8 @@ var Deck = {
 						});
 					});
 				}
-				
 		    }
 		});
-		
 
 		$(".pile-ace").droppable({
 			drop: function(event, ui) {
@@ -86,10 +82,13 @@ var Deck = {
 				    card.draggable("disable");
 
 				    Board.setScore(1);
+				    
 
 				    // Test piles for top card dragging ability
-				    that.enableDraggingDropTopCard();
-				    that.enableDraggingThirteenTopCard();
+				    that.enableDraggingDropTopCard(boardID);
+				    that.enableDraggingThirteenTopCard(boardID);
+
+				    that.broadcastDrop(socket, boardID);
 				    that.testGameWon();
 				}
 			},
@@ -122,7 +121,7 @@ var Deck = {
 			tolerance: "pointer" // The pointer has to be over the cardholder to drop
 		});
 
-		$(".other").droppable({
+		$("#board-"+boardID+" .other").droppable({
 			drop: function(event, ui) {
 				that.resetUnturnedCards();
 				var card = $(ui.draggable[0]);
@@ -131,17 +130,20 @@ var Deck = {
 				$(this).children(".empty").append(card);
 				$(this).children(".empty").append(next);
 				
-				$(this).children(".empty").children().each(function(index, obj) { // fix z-index here instead
+				$(this).children(".empty").children().each(function(index, obj) {
 					var pos = index * 30 -1;
 					$(obj).css({
 				    	left: "-1px",
 				    	top: pos + "px"
 			    	});	
 				});
+				
 
 			    // Test piles for top card dragging ability
-			    that.enableDraggingDropTopCard();
-			    that.enableDraggingThirteenTopCard();
+			    that.enableDraggingDropTopCard(boardID);
+			    that.enableDraggingThirteenTopCard(boardID);
+
+			    that.broadcastDrop(socket, boardID);
 			    that.testGameWon();
 			},
 			accept: function(e) { // Accept if right color and nr suitable for top card or if empty
@@ -168,28 +170,65 @@ var Deck = {
 			tolerance: "pointer" // The pointer has to be over the cardholder to drop
 		});
 	},
-	doubleClickable: function() {
+	doubleClickable: function(boardID) {
+		var that = this;
 		// When double click, test if possible to append card on any of the ace-piles
-		$(document).on("dblclick", ".card", function(e) {
+		$(document).on("dblclick", "#board-"+boardID+" .card", function(e) {
+			var click = this;
 			if (!$(this).hasClass("turned")) {
-				console.log($(this).draggable("option"));
-				console.log(this);
+				var id = $(this).attr("id");
+				var c = id.split("_");
+				$(".pile-ace").each(function(index, obj) {
+					var lastChild = $(obj).children().last().attr("id");
+					if (lastChild !== undefined) {
+						var pile = lastChild.split("_");
+						if (c[0] == pile[0] && c[1] == +pile[1]+1) {
+							var z = $(obj).children().last().css("z-index");
+							$(click).css({
+								"z-index": z+1,
+								"top": "-1px",
+								"left": "-1px"
+							});
+							$(obj).append(click);
+							$(click).draggable("disable");
+
+							that.enableDraggingDropTopCard(boardID);
+						    that.enableDraggingThirteenTopCard(boardID);
+						    that.testGameWon();
+						}
+					} else if (c[1] == 1) {
+						$(click).css({
+							"top": "-1px",
+							"left": "-1px"
+						});
+						$(obj).append(click);
+						$(click).draggable("disable");
+
+						that.enableDraggingDropTopCard(boardID);
+					    that.enableDraggingThirteenTopCard(boardID);
+					    that.testGameWon();
+					}
+				});
 			}
 		});
 	},
-	enableDraggingDropTopCard: function() {
+	enableDraggingDropTopCard: function(boardID) {
 		// Test drop-pile for top card dragging ability
-		if ($(".pile-drop").children().length > 0) {
-    		$(".pile-drop").children().last().draggable("enable");
+		if ($("#board-"+boardID+" .pile-drop").children().length > 0) {
+    		$("#board-"+boardID+" .pile-drop").children().last().draggable("enable");
     	}	
 	},
-	enableDraggingThirteenTopCard: function() {
+	enableDraggingThirteenTopCard: function(boardID) {
 		// Test thirteen-pile for top card dragging ability and not turned
-		$(".pile-thirteen").children().last().draggable("enable").removeClass("turned");
+		$("#board-"+boardID+" .pile-thirteen").children().last().draggable("enable").removeClass("turned");
 		this.resetUnturnedCards();
 	},
-	resetTurnedCards: function() {
-		$(".turned").attr("src", "pics/default.png");
+	resetTurnedCards: function(boardID) {
+		var color = "red";
+		if (boardID == 1) {
+			color = "blue";
+		}
+		$(".turned").attr("src", "pics/default-"+color+".png");
 	},
 	resetUnturnedCards: function() {
 		$(".card").not(".turned").each(function(index, obj) {
@@ -199,6 +238,10 @@ var Deck = {
 			 
 			$(obj).attr("src", "pics/"+c[0]+"/"+c[1]+".png");
 		});
+	},
+	broadcastDrop: function(socket, boardID) {
+		var html = $("#board-"+boardID+".board").html();
+		socket.emit("card move", { html: html, boardID: boardID });
 	},
 	testGameWon: function() {
 		var won = false;
@@ -210,7 +253,6 @@ var Deck = {
 			if (confirm("Congratulations, you have won the game! confirm to reload.")) {
 				window.location = "index.html";
 			}
-			
 		}
 	}
 }
