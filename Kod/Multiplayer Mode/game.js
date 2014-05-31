@@ -32,6 +32,7 @@ function onSocketConnection(client) {
 	client.on("disconnect", onClientDisconnect);
 	client.on("new player", onNewPlayer);
 	client.on("card move", onCardMove);
+	client.on("remove player", onRemovePlayer);
 }
 
 function onClientDisconnect() {
@@ -56,27 +57,28 @@ function onClientDisconnect() {
 function onNewPlayer(data) {
 	var newPlayer = new Player(this.id);
 	newPlayer.html = data.html;
-	newPlayer.boardID = data.boardID;
 
-	if (players.length <= 2) { // There can only play two people at the same time per game. TODO: Fix multiple game sessions
+	// Broadcasts the new players info to all existing players
+	this.broadcast.emit("new player", { id: newPlayer.id, html: newPlayer.html });
 
-		// Broadcasts the new players info to all existing players
-		this.broadcast.emit("new player", { id: newPlayer.id, html: newPlayer.html, boardID: newPlayer.boardID });
+	// Broadcasts the existing players info to the new player
+	var existingPlayer;
+	for (var i = 0; i < players.length; i++) {
+	    existingPlayer = players[i];
+	    this.emit("new player", { id: existingPlayer.id, html: existingPlayer.html });
+	};
 
-		// Broadcasts the existing players info to the new player
-		var existingPlayer;
-		for (var i = 0; i < players.length; i++) {
-		    existingPlayer = players[i];
-		    this.emit("new player", { id: existingPlayer.id, html: existingPlayer.html, boardID: existingPlayer.boardID });
-		};
+	players.push(newPlayer);
 
-		players.push(newPlayer);
 
-	}
 };
 
 function onCardMove(data) {
 	this.broadcast.emit("card move", data); // broadcast the changed HTML to other player
+};
+
+function onRemovePlayer(data) {
+	this.broadcast.emit("remove player", data);
 };
 
 function getPlayerById(id) {

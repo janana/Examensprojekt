@@ -11,12 +11,12 @@ $(document).ready(function() {
 	socket.on("card move", onCardMove);
 
 
-	function initCards(boardID) {
+	function initCards() {
 		var deck = Deck.create();
 		// Add the card HTML to page
 		
 		// The playable cards
-		$("#board-"+boardID+" .empty").each(function(index, obj) {
+		$("#board-"+localPlayer.id+" .empty").each(function(index, obj) {
 			$(obj).append(deck[index].HTML);
 		});
 
@@ -28,37 +28,39 @@ $(document).ready(function() {
 			cardHTML += deck[i].HTML;
 		}
 		
-		$("#board-"+boardID+" .pile-thirteen").append(thirteenHTML);
-		$("#board-"+boardID+" .pile-thirteen .card").addClass("turned");
-		$("#board-"+boardID+" .pile-thirteen").children().each(function(index, obj) {
+		$("#board-"+localPlayer.id+" .pile-thirteen").append(thirteenHTML);
+		$("#board-"+localPlayer.id+" .pile-thirteen .card").addClass("turned");
+		$("#board-"+localPlayer.id+" .pile-thirteen").children().each(function(index, obj) {
 			$(obj).css({
 				top: index * 12 -1 +"px"
 			})
 		});
-		$("#board-"+boardID+" .pile-thirteen").children().last().removeClass("turned");
+		$("#board-"+localPlayer.id+" .pile-thirteen").children().last().removeClass("turned");
 		
-		$("#board-"+boardID+" .pile").append(cardHTML);
-		$("#board-"+boardID+" .pile .card").addClass("turned");
+		$("#board-"+localPlayer.id+" .pile").append(cardHTML);
+		$("#board-"+localPlayer.id+" .pile .card").addClass("turned");
 	};
 
 
-	var boardID = Board.init(socket);
-	initCards(boardID);
-
-	var html = $("#board-"+boardID+".board").html();
-	socket.emit("move card", { html: html, boardID: boardID });
-
-	// Make the cards draggable
-	Deck.draggable(socket, boardID);
-	Deck.doubleClickable(boardID);
-	Deck.resetTurnedCards(boardID);
-
-
-
 	function onSocketConnected() {
-		console.log("Connected to socket server");
+		console.log("Connected to socket server: "+socket.socket.sessionid);
+		localPlayer.id = socket.socket.sessionid;
+		console.log(socket);
+		var color = "red";
 
-		socket.emit("new player", {id: localPlayer.id, html: html, boardID: boardID });
+		Board.init(socket, localPlayer.id, color);
+		initCards();
+
+		console.log("local player board ID: "+localPlayer.id);
+		var html = $("#board-"+localPlayer.id+".board").html();
+
+		// Make the cards draggable
+		Deck.draggable(socket, localPlayer.id);
+		Deck.doubleClickable(localPlayer.id);
+		Deck.resetTurnedCards();
+
+		socket.emit("new player", {id: socket.socket.sessionid, html: html });
+		socket.emit("move card", { html: html, id: localPlayer.id });
 	};
 
 	function onSocketDisconnect() {
@@ -67,12 +69,17 @@ $(document).ready(function() {
 
 	function onNewPlayer(data) {
 		console.log("New player connected: "+data.id);
+	
 
 		var newPlayer = new Player(data.id);
+		newPlayer.html = data.html;
 		remotePlayers.push(newPlayer);
 
+		console.log("Players now connected: "+(+remotePlayers.length+1));
+		
 		// GET THE OTHER PLAYERS BOARD
-		$("#container").append("<div id='"+data.boardID+"' class='board'>"+data.html+"</div>");
+		$("#container").append("<div id='board-"+data.id+"' class='board'>"+data.html+"</div>");
+		Deck.resetTurnedCards();
 	};
 
 	function onRemovePlayer(data) {
@@ -86,14 +93,18 @@ $(document).ready(function() {
 
 		// Remove player from array
 		remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
-		$(data.boardID).remove();
+		$("#board-"+data.id).remove();
+
+		// remove the board from other players html
+		socket.emit("remove board", data.id);
 		console.log("Player has disconnected: "+data.id);
 	};
 
 	function onCardMove(data) {
-		$("#board-"+data.boardID).html(data.html);
+		var p = getPlayerById(data.id);
+		p.html = data.html;
+		$("#board-"+data.id).html(data.html);
 	};
-
 
 	function getPlayerById(id) {
 		for (var i = 0; i < remotePlayers.length; i++) {

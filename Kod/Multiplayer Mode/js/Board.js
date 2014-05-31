@@ -1,7 +1,5 @@
 var Board = {
-	init: function(socket) {
-		var boards = $(".board");
-		var id = boards.length;
+	init: function(socket, id, color) {
 
 		$("#container").append("<div id='board-"+id+"' class='board'>"+
 									"<div class='pile-div'>"+
@@ -22,7 +20,7 @@ var Board = {
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
-									
+									"<input type='hidden' value='"+color+"' />"+
 								"</div>");
 
 		$("#board-"+id+" .pile").click(function(e) {
@@ -114,7 +112,7 @@ var Board = {
 						left: "-1px"
 					});
 				});
-				Deck.resetTurnedCards(id);
+				Deck.resetTurnedCards();
 			}
 			Deck.broadcastDrop(socket, id);
 		}); 

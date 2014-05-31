@@ -223,12 +223,10 @@ var Deck = {
 		$("#board-"+boardID+" .pile-thirteen").children().last().draggable("enable").removeClass("turned");
 		this.resetUnturnedCards();
 	},
-	resetTurnedCards: function(boardID) {
-		var color = "red";
-		if (boardID == 1) {
-			color = "blue";
-		}
-		$(".turned").attr("src", "pics/default-"+color+".png");
+	resetTurnedCards: function() {
+		
+		$(".turned").attr("src", "pics/default-red.png");
+		$(".board:first-of-type .turned").attr("src", "pics/default-blue.png");
 	},
 	resetUnturnedCards: function() {
 		$(".card").not(".turned").each(function(index, obj) {
@@ -240,8 +238,8 @@ var Deck = {
 		});
 	},
 	broadcastDrop: function(socket, boardID) {
-		var html = $("#board-"+boardID+".board").html();
-		socket.emit("card move", { html: html, boardID: boardID });
+		var html = $("#board-"+boardID).html();
+		socket.emit("card move", { html: html, id: boardID });
 	},
 	testGameWon: function() {
 		var won = false;
