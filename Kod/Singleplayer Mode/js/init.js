@@ -3,13 +3,12 @@ $(document).ready(function() {
 
 	var deck = Deck.create();
 
-	// Add the card HTML to page
-	
 	// The playable cards
 	$(".empty").each(function(index, obj) {
 		$(obj).append(deck[index].HTML);
 	});
-
+	
+	// Add the card HTML to page
 	var cardHTML = "", thirteenHTML = "";
 	for (var j = 4; j < 16; j++) {
 		thirteenHTML += deck[j].HTML;
@@ -29,8 +28,7 @@ $(document).ready(function() {
 	
 	$(".pile").append(cardHTML);
 	$(".pile .card").addClass("turned");
-
-
+	
 
 	// Make the cards draggable
 	Deck.draggable();

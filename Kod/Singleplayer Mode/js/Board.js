@@ -19,9 +19,14 @@ var Board = {
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
-									
+									"<input type='button' id='restart' class='btn btn-default' value='Restart game' />"+
 								"</div>");
-
+		
+		$("#restart").click(function() {
+			if (confirm("Confirm to restart the game.")) {
+					window.location = "index.html";
+			}
+		});
 		$(".pile").click(function(e) {
 			if ($(this).children().length > 0) {
 				// Disable dragging on cards already in the drop-pile

@@ -43,7 +43,6 @@ var Deck = {
 				var highestZindex = parseInt($(this).css("zIndex"), 10);
 				if ($(this).parent().hasClass("empty") && $(this).next().length != 0) {
 					$(this).parent().children().each(function(index, obj) {
-						var pos = (index * 30) -1;
 						$(obj).css({
 							"z-index": highestZindex + 1
 						});
@@ -237,7 +236,9 @@ var Deck = {
 		}
 
 		if (won) {
-			if (confirm("Congratulations, you have won the game! confirm to reload.")) {
+			var score = Board.getScore();
+			score += 2;
+			if (confirm("Congratulations, you have won the game! \nYou received a final score of: "+score+". \n\nConfirm to restart the game.")) {
 				window.location = "index.html";
 			}
 		}

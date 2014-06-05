@@ -25,21 +25,21 @@ body {
 	overflow: visible;
 }
 .pile {
-	background: #aaa;
+	background: #ddd;
 }
 .pile-drop { 
-	background: #dec;
+	background: #ddd;
 }
 .pile-div {
 	float: left;
 	margin-right: 70px;
 }
 .pile-thirteen {
-	background: #ecf;
+	background: #ddd;
 	margin-right: 165px;
 }
 .empty {
-	background: #def;
+	background: #eff;
 	overflow: visible;
 }
 .other {
@@ -52,7 +52,7 @@ body {
 }
 
 .pile-ace {
-	background: #ddd;
+	background: #eee;
 	
 }
 .ace-piles {
@@ -81,5 +81,8 @@ body {
  * Board
  */
 
-.board {
+#restart {
+	position: relative;
+	top: -240px;
+	left: 30px;
 }
