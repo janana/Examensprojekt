@@ -74,6 +74,8 @@ function onNewPlayer(data) {
 };
 
 function onCardMove(data) {
+	var p = getPlayerById(data.id);
+	p.html = data.html;
 	this.broadcast.emit("card move", data); // broadcast the changed HTML to other player
 };
 

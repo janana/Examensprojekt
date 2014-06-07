@@ -19,13 +19,22 @@ var Board = {
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
 									"<div class='other'><div class='cardholder empty'></div></div>"+
-									"<input type='button' id='restart' class='btn btn-default' value='Restart game' />"+
+									"<div id='buttons'><input type='button' id='restart' class='btn btn-default' value='Restart game' />"+
+									"<input type='button' id='rules' class='btn btn-default' value='Rules' /></div>"+
 								"</div>");
 		
 		$("#restart").click(function() {
 			if (confirm("Confirm to restart the game.")) {
 					window.location = "index.html";
 			}
+		});
+		$("#rules").click(function() {
+			alert("Welcome to the amazingly fun game of Patiens Duel!\n\n"+
+					"Play the game by dragging cards to the four game piles, which accept alternating red and black cards.\n\n"+
+					"By putting a card in the ace piles you gain one point, and this can be done by dragging och double clicking the card.\n\n"+
+					"You can also gain points by playing cards from the thirteen pile, of which you gain 2 points for each card.\n\n"+
+					"To win the game you have to clear the thirteen pile of cards.\n\n"+
+					"Good luck!");
 		});
 		$(".pile").click(function(e) {
 			if ($(this).children().length > 0) {

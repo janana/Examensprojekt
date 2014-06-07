@@ -170,15 +170,15 @@ var Deck = {
 			tolerance: "pointer" // The pointer has to be over the cardholder to drop
 		});
 	},
-	doubleClickable: function(boardID) {
+	doubleClickable: function(socket, boardID) {
 		var that = this;
-		// When double click, test if possible to append card on any of the ace-piles
+		// When double click, test if possible to append card on the ace-piles
 		$(document).on("dblclick", "#board-"+boardID+" .card", function(e) {
 			var click = this;
 			if (!$(this).hasClass("turned")) {
 				var id = $(this).attr("id");
 				var c = id.split("_");
-				$(".pile-ace").each(function(index, obj) {
+				$("#board-"+boardID+" .pile-ace").each(function(index, obj) {
 					var lastChild = $(obj).children().last().attr("id");
 					if (lastChild !== undefined) {
 						var pile = lastChild.split("_");
@@ -191,9 +191,11 @@ var Deck = {
 							});
 							$(obj).append(click);
 							$(click).draggable("disable");
-
+							
 							that.enableDraggingDropTopCard(boardID);
 						    that.enableDraggingThirteenTopCard(boardID);
+
+						    that.broadcastDrop(socket, boardID);
 						    that.testGameWon();
 						}
 					} else if (c[1] == 1) {
@@ -206,6 +208,8 @@ var Deck = {
 
 						that.enableDraggingDropTopCard(boardID);
 					    that.enableDraggingThirteenTopCard(boardID);
+
+					    that.broadcastDrop(socket, boardID);
 					    that.testGameWon();
 					}
 				});
@@ -224,9 +228,7 @@ var Deck = {
 		this.resetUnturnedCards();
 	},
 	resetTurnedCards: function() {
-		
-		$(".turned").attr("src", "pics/default-red.png");
-		$(".board:first-of-type .turned").attr("src", "pics/default-blue.png");
+		$(".turned").attr("src", "pics/default-blue.png");
 	},
 	resetUnturnedCards: function() {
 		$(".card").not(".turned").each(function(index, obj) {

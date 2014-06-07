@@ -45,18 +45,23 @@ $(document).ready(function() {
 	function onSocketConnected() {
 		console.log("Connected to socket server: "+socket.socket.sessionid);
 		localPlayer.id = socket.socket.sessionid;
-		console.log(socket);
-		var color = "red";
-
-		Board.init(socket, localPlayer.id, color);
+		
+		
+		
+		if (remotePlayers.length > 0) {
+			console.log("second player!");
+		} else {
+			
+		}
+		
+		Board.init(socket, localPlayer.id);
 		initCards();
 
-		console.log("local player board ID: "+localPlayer.id);
 		var html = $("#board-"+localPlayer.id+".board").html();
 
 		// Make the cards draggable
 		Deck.draggable(socket, localPlayer.id);
-		Deck.doubleClickable(localPlayer.id);
+		Deck.doubleClickable(socket, localPlayer.id);
 		Deck.resetTurnedCards();
 
 		socket.emit("new player", {id: socket.socket.sessionid, html: html });
@@ -70,12 +75,9 @@ $(document).ready(function() {
 	function onNewPlayer(data) {
 		console.log("New player connected: "+data.id);
 	
-
 		var newPlayer = new Player(data.id);
 		newPlayer.html = data.html;
 		remotePlayers.push(newPlayer);
-
-		console.log("Players now connected: "+(+remotePlayers.length+1));
 		
 		// GET THE OTHER PLAYERS BOARD
 		$("#container").append("<div id='board-"+data.id+"' class='board'>"+data.html+"</div>");
@@ -96,13 +98,12 @@ $(document).ready(function() {
 		$("#board-"+data.id).remove();
 
 		// remove the board from other players html
-		socket.emit("remove board", data.id);
 		console.log("Player has disconnected: "+data.id);
 	};
 
 	function onCardMove(data) {
 		var p = getPlayerById(data.id);
-		p.html = data.html;
+		remotePlayers[remotePlayers.indexOf(p)].html = data.html;
 		$("#board-"+data.id).html(data.html);
 	};
 

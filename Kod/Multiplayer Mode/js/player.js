@@ -1,7 +1,7 @@
 // Client side player class
 var Player = function(id) {
 	var score = 0,
-		html;
+		html = "test";
 
 
 	var getScore = function() {

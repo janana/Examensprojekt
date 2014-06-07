@@ -81,8 +81,14 @@ body {
  * Board
  */
 
-#restart {
-	position: relative;
-	top: -240px;
-	left: 30px;
+#restart, #rules {
+	width: 111px;
+	margin-bottom: 10px;
 }
+#buttons {
+	width: 111px;
+	position: absolute;
+	top: 75px;
+	left: 730px;
+}
+
